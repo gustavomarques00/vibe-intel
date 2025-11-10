@@ -23,7 +23,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@vibe/shared':
+      '@devflow-modules/vibe-shared':
         specifier: workspace:*
         version: link:../shared
       commander:
