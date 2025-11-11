@@ -1,4 +1,21 @@
 
-> @devflow-modules/vibe-core@0.1.0 build C:\Users\Xakep\Desktop\vibe-intel\packages\core
+> @devflow-modules/vibe-core@0.1.1 build C:\Users\Xakep\Desktop\vibe-intel\packages\core
 > tsc -p tsconfig.json
 
+src/agent/agent.ts(5,32): error TS2339: Property 'skill' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(8,9): error TS2339: Property 'context' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(10,18): error TS2339: Property 'skill' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(11,20): error TS2339: Property 'payload' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(15,36): error TS2339: Property 'payload' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(15,51): error TS2339: Property 'context' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(17,9): error TS2339: Property 'context' does not exist on type 'VibeRunInput'.
+src/agent/agent.ts(19,18): error TS2339: Property 'skill' does not exist on type 'VibeRunInput'.
+src/cli/index.ts(26,33): error TS2345: Argument of type 'VibeRunInput<unknown>' is not assignable to parameter of type 'VibeRunInput'.
+  Property 'goal' is missing in type 'VibeRunInput<unknown>' but required in type 'VibeRunInput'.
+src/skills/code_review.ts(53,7): error TS2339: Property 'telemetry' does not exist on type 'VibeSkillContext'.
+src/skills/code_review.ts(76,29): error TS2349: This expression is not callable.
+  Type 'OpenAI' has no call signatures.
+src/skills/code_review.ts(77,16): error TS2339: Property 'model' does not exist on type 'VibeSkillContext'.
+src/skills/code_review.ts(84,14): error TS2339: Property 'env' does not exist on type 'VibeSkillContext'.
+src/skills/code_review.ts(101,7): error TS2339: Property 'telemetry' does not exist on type 'VibeSkillContext'.
+ ELIFECYCLE  Command failed with exit code 2.

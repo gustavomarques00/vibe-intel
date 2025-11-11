@@ -1,10 +1,13 @@
-import type { VibeRunInput } from "@devflow-modules/vibe-shared";
+/**
+ * Identifica a intenção de execução com base em metadados ou parâmetros do input.
+ */
+export function detectIntent(goal?: string): string {
+  if (!goal) return "unknown";
 
-export type Intent = "review" | "tests" | "docs" | "default";
+  const normalized = goal.toLowerCase();
+  if (["review", "analyze", "check"].includes(normalized)) return "code_review";
+  if (["docs", "comment", "document"].includes(normalized)) return "docs_comment";
+  if (["test", "qa", "verify"].includes(normalized)) return "generate_tests";
 
-export async function detectIntent(input: VibeRunInput): Promise<Intent> {
-  if (["review", "tests", "docs"].includes(input.goal)) {
-    return input.goal as Intent;
-  }
-  return "default";
+  return "unknown";
 }

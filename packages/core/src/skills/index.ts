@@ -1,18 +1,14 @@
+import { runCodeReview } from "./code_review.js";
 import type { VibeSkillContext } from "@devflow-modules/vibe-shared";
-import * as CodeReview from "./code_review.js";
 
-export type SkillName = "review" | "tests" | "docs";
+export type SkillRunner = (payload: unknown, ctx: VibeSkillContext) => Promise<unknown>;
 
-type SkillFn = (ctx: VibeSkillContext) => Promise<unknown>;
-
-export const skills: Record<SkillName, SkillFn> = {
-  review: CodeReview.execute,
-  tests: async (ctx) => {
-    // placeholder
-    return { summary: "tests not implemented yet", goal: ctx.input.goal };
-  },
-  docs: async (ctx) => {
-    // placeholder
-    return { summary: "docs not implemented yet", goal: ctx.input.goal };
-  }
+const skills: Record<string, SkillRunner> = {
+  code_review: runCodeReview,
 };
+
+export function getSkill(name: string): SkillRunner {
+  const skill = skills[name];
+  if (!skill) throw new Error(`Skill not found: ${name}`);
+  return skill;
+}

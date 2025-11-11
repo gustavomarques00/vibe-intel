@@ -1,26 +1,19 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { FastifyInstance, FastifyPluginAsync } from "fastify";
 import jwt from "@fastify/jwt";
 
-export async function registerAuth(fastify: FastifyInstance) {
-  await fastify.register(jwt, {
-    secret: process.env.JWT_SECRET || "dev-secret"
+export const registerAuth: FastifyPluginAsync = async (app: FastifyInstance) => {
+  await app.register(jwt, {
+    secret: process.env.JWT_SECRET || "development_secret",
   });
 
-  fastify.decorate(
+  app.decorate(
     "authenticate",
-    async (req: FastifyRequest, res: FastifyReply) => {
+    async (req: any, reply: any) => {
       try {
         await req.jwtVerify();
-      } catch {
-        res.code(401).send({ error: "unauthorized" });
+      } catch (err) {
+        reply.send(err);
       }
     }
   );
-}
-
-// apenas estenda o FastifyInstance, sem sobrescrever jwtVerify/user
-declare module "fastify" {
-  interface FastifyInstance {
-    authenticate: (req: FastifyRequest, res: FastifyReply) => Promise<void>;
-  }
-}
+};

@@ -1,27 +1,54 @@
 {
-  "name": "vibe-intel",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "packageManager": "pnpm@10.21.0",
-  "scripts": {
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "dev:api": "pnpm --filter @devflow-modules/vibe-api dev",
-    "dev:core": "pnpm --filter @devflow-modules/vibe-core dev",
-    "dev:ui": "pnpm --filter @devflow-modules/vibe-ui dev"
-  },
-  "devDependencies": {
-    "@types/node": "^24.10.0",
-    "eslint": "^9.0.0",
-    "prettier": "^3.0.0",
-    "turbo": "^2.0.0",
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "commander": "^14.0.2",
-    "fast-glob": "^3.3.3",
-    "zod": "^4.1.12"
-  }
+    "name": "vibe-intel",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "packageManager": "pnpm@10.21.0",
+    "scripts": {
+        "build": "turbo run build --filter=!./",
+        "lint": "turbo run lint",
+        "test": "turbo run test",
+        "dev:api": "pnpm --filter @devflow-modules/vibe-api dev",
+        "dev:core": "pnpm --filter @devflow-modules/vibe-core dev",
+        "dev:ui": "pnpm --filter @devflow-modules/vibe-ui dev"
+    },
+    "devDependencies": {
+        "@types/dotenv": "^8.2.3",
+        "@types/node": "^24.10.0",
+        "commitizen": "^4.3.1",
+        "cz-conventional-changelog": "^3.3.0",
+        "eslint": "^9.0.0",
+        "prettier": "^3.0.0",
+        "turbo": "^2.0.0",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@fastify/cors": "^10.1.0",
+        "@fastify/jwt": "^9.1.0",
+        "@fastify/rate-limit": "^10.3.0",
+        "commander": "^14.0.2",
+        "dotenv": "^16.6.1",
+        "fast-glob": "^3.3.3",
+        "fastify": "^5.6.2",
+        "zod": "^4.1.12"
+    },
+    "workspaces": [
+        "packages/core",
+        "packages/shared",
+        "packages/api"
+    ],
+    "pnpm": {
+        "overrides": {
+            "fastify": "^5.6.2",
+            "fastify-plugin": "^5.1.0",
+            "@fastify/cors": "^10.1.0",
+            "@fastify/jwt": "^9.1.0",
+            "@fastify/rate-limit": "^10.3.0"
+        }
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
+    }
 }

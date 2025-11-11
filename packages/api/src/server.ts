@@ -1,29 +1,52 @@
 import Fastify from "fastify";
 import dotenv from "dotenv";
 
-import { registerAuth } from "./lib/auth.js";
-import { registerRateLimit } from "./lib/rate.js";
+import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
+import jwt from "@fastify/jwt";
+
 import { registerHealthRoute } from "./routes/v1/health.js";
 import { registerTasksRoute } from "./routes/v1/tasks.js";
+import { reviewHandler } from "./routes/v1/review.js";
 
-dotenv.config();
+dotenv.config({ path: ".env.local" });
+
+async function buildServer() {
+  const app = Fastify({ logger: true });
+
+  // ─── Core middlewares ───────────────────────────────────────────────
+  await app.register(cors, { origin: "*" });
+  await app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
+  await app.register(jwt, {
+    secret: process.env.JWT_SECRET || "development_secret",
+  });
+
+  // ─── JWT decorator ──────────────────────────────────────────────────
+  app.decorate("authenticate", async (req: any, reply: any) => {
+    try {
+      await req.jwtVerify();
+    } catch (err) {
+      reply.send(err);
+    }
+  });
+
+  // ─── Routes ─────────────────────────────────────────────────────────
+  await registerHealthRoute(app);
+  await registerTasksRoute(app);
+  app.post("/v1/review", reviewHandler);
+
+  return app;
+}
 
 async function startServer() {
-  const fastify = Fastify({ logger: true });
-
-  // Registro dos plugins e rotas
-  await registerAuth(fastify);
-  await registerRateLimit(fastify);
-  await registerHealthRoute(fastify);
-  await registerTasksRoute(fastify);
-
+  const app = await buildServer();
   const port = Number(process.env.PORT || 3333);
 
   try {
-    await fastify.listen({ port, host: "0.0.0.0" });
-    console.log(`🚀 Server running on http://localhost:${port}`);
+    await app.listen({ port, host: "0.0.0.0" });
+    console.log(`✅ Server running at http://localhost:${port}`);
   } catch (err) {
-    fastify.log.error(err);
+    app.log.error(err);
     process.exit(1);
   }
 }

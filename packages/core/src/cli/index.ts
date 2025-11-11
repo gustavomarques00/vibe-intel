@@ -1,38 +1,26 @@
-#!/usr/bin/env node
-import { Command } from "commander";
-import { runTask } from "../agent/agent.js";
-import { loadFiles } from "../agent/context.js";
+import { runAgent } from "../agent/agent.js";
+import type { VibeRunInput } from "../types.js";
 
-const program = new Command();
+export async function runCLI() {
+  const input: VibeRunInput = {
+    skill: "code_review",
+    payload: {
+      files: [
+        { path: "example.ts", content: "console.log('Hello');" }
+      ],
+    },
+    context: {
+      env: "local",
+      model: "gpt-4o-mini",
+      telemetry: {
+        onEvent(event) {
+          console.log(`[${event.type}] ${event.skill}`, event.payload ?? event.result);
+        },
+      },
 
-program
-  .name("vibe")
-  .description("Dev Intelligence CLI")
-  .version("0.1.0");
+    },
+  };
 
-program
-  .command("review")
-  .argument("<glob>", "arquivos ou pasta (ex: 'src/**/*.ts')")
-  .action(async (glob) => {
-    try {
-      const files = await loadFiles(glob);
-      const out = await runTask({ goal: "review", files });
-      // saída JSON bonita
-      // eslint-disable-next-line no-console
-      console.log(JSON.stringify(out, null, 2));
-    } catch (err) {
-      console.error("Erro na execução:", err);
-      process.exit(1);
-    }
-  });
-
-program
-  .command("tests")
-  .argument("<glob>", "arquivos ou pasta")
-  .action(async (glob) => {
-    const files = await loadFiles(glob);
-    const out = await runTask({ goal: "tests", files });
-    console.log(JSON.stringify(out, null, 2));
-  });
-
-program.parse();
+  const result = await runAgent(input);
+  console.log(JSON.stringify(result, null, 2));
+}

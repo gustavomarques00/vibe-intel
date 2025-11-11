@@ -1,4 +1,4 @@
 
-> @devflow-modules/vibe-shared@0.1.0 build C:\Users\Xakep\Desktop\vibe-intel\packages\shared
+> @devflow-modules/vibe-shared@0.1.1 build C:\Users\Xakep\Desktop\vibe-intel\packages\shared
 > tsc -p tsconfig.json
 

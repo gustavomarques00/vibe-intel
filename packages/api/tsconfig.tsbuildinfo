@@ -1,0 +1,1 @@
+{"root":["./src/server.ts","./src/lib/auth.ts","./src/lib/rate.ts","./src/lib/supabase.ts","./src/routes/v1/health.ts","./src/routes/v1/review.ts","./src/routes/v1/tasks.ts"],"errors":true,"version":"5.9.3"}

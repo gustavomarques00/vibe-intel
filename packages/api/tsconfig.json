@@ -1,10 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@devflow-modules/vibe-core": ["../core/src/index.ts"],
+      "@devflow-modules/vibe-shared": ["../shared/src/index.ts"]
+    },
     "outDir": "dist",
-    "rootDir": "src",
-    "types": ["node"],
-    "declaration": false
+    "typeRoots": ["node", "fastify", "./src/types/fastify"]
   },
   "include": ["src"]
 }

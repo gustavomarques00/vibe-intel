@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { runTask } from "@devflow-modules/vibe-core";
+import { runAgent } from "@devflow-modules/vibe-core";
 
 const BodySchema = z.object({
   goal: z.enum(["review", "tests", "docs"]),
@@ -15,14 +15,26 @@ const BodySchema = z.object({
 export async function registerTasksRoute(fastify: FastifyInstance) {
   fastify.post(
     "/v1/tasks",
-    { preValidation: [fastify.authenticate] },
+    { preValidation: [(fastify as any).authenticate] },
     async (req, res) => {
       const input = BodySchema.parse(req.body as unknown);
-      const result = await runTask({
-        goal: input.goal,
-        files: input.files.map((f: any) => f.content)
+
+      const result = await runAgent({
+        skill: input.goal, // usamos o campo 'goal' como nome da skill
+        payload: { files: input.files },
+        context: {
+          env: "cloud",
+          model: "gpt-4o-mini",
+          telemetry: {
+            onEvent(event) {
+              console.log(`[${event.type}] ${event.skill}`, event.payload ?? event.result);
+            },
+          },
+        },
       });
+
       return res.send({ ok: true, result });
-    }
+    },
   );
+
 }

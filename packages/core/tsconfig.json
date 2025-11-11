@@ -1,20 +1,11 @@
 {
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "@devflow-modules/vibe-shared": [
-                "../shared/src"
-            ]
-        },
-        "outDir": "dist",
-        "rootDir": "src",
-        "declaration": true,
-        "declarationMap": false,
-        "emitDeclarationOnly": false,
-        "sourceMap": false
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@devflow-modules/vibe-shared": ["../shared/src/index.ts"]
     },
-    "include": [
-        "src/**/*"
-    ]
+    "outDir": "dist"
+  },
+  "include": ["src"]
 }

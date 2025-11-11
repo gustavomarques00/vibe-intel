@@ -1,47 +1,109 @@
 import { z } from "zod";
+import { ai } from "@devflow-modules/vibe-shared";
 import type { VibeSkillContext } from "@devflow-modules/vibe-shared";
 
-
-const ReviewSchema = z.object({
-    summary: z.string(),
-    issues: z.array(
-        z.object({
-            file: z.string(),
-            line: z.number().optional(),
-            type: z.enum(["bug", "perf", "security", "style"]),
-            reason: z.string(),
-            fix: z.string()
-        })
-    ),
-    risk: z.enum(["low", "medium", "high"])
+const FileSchema = z.object({
+  path: z.string(),
+  content: z.string(),
 });
 
-export type ReviewResult = z.infer<typeof ReviewSchema>;
+export const CodeReviewInputSchema = z.object({
+  files: z.array(FileSchema).min(1),
+  language: z.string().default("typescript"),
+  framework: z.string().optional(),
+  focus: z
+    .array(
+      z.enum(["bugs", "style", "performance", "security", "architecture"]),
+    )
+    .default(["bugs", "style", "architecture"]),
+});
 
-export async function execute({ ai, input }: VibeSkillContext): Promise<ReviewResult> {
-    const messages = [
-        {
-            role: "system" as const,
-            content:
-                "Você é um revisor sênior. Responda em JSON estrito seguindo o schema esperado."
-        },
-        {
-            role: "user" as const,
-            content: JSON.stringify({
-                goal: input.goal,
-                files: input.files
-            })
-        }
-    ];
+export type CodeReviewInput = z.infer<typeof CodeReviewInputSchema>;
 
-    const res = await ai.responses.parse({
-        model: "gpt-5-turbo",
-        input: messages,
-        schema: ReviewSchema
-    });
+export interface CodeReviewFinding {
+  file: string;
+  severity: "info" | "minor" | "major" | "critical";
+  line?: number;
+  message: string;
+  suggestion?: string;
+}
 
-    const first = Array.isArray(res.output) ? res.output[0] : res.output;
-    const parsed = (first as any)?.content ?? {};
+export interface CodeReviewResult {
+  summary: string;
+  findings: CodeReviewFinding[];
+  metrics: {
+    filesCount: number;
+    chars: number;
+  };
+}
 
-    return parsed as unknown as ReviewResult;
+export async function runCodeReview(
+  payload: unknown,
+  ctx: VibeSkillContext,
+): Promise<CodeReviewResult> {
+  const input = CodeReviewInputSchema.parse(payload);
+
+  const combined = input.files
+    .map((f) => `// FILE: ${f.path}\n${f.content}`)
+    .join("\n\n");
+
+  const chars = combined.length;
+  const now = new Date().toISOString();
+
+  ctx.telemetry?.onEvent?.({
+    type: "start",
+    skill: "code_review",
+    payload: {
+      files: input.files.map((f) => f.path),
+      language: input.language,
+      framework: input.framework,
+      focus: input.focus,
+      chars,
+    },
+    timestamp: now,
+  });
+
+  const systemPrompt = [
+    "You are a senior software engineer performing a strict code review.",
+    `Language: ${input.language}`,
+    input.framework ? `Framework: ${input.framework}` : "",
+    `Focus: ${input.focus.join(", ")}`,
+    "Return a JSON with: summary, findings[].{file,severity,line,message,suggestion}",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const { content } = await ai({
+    model: ctx.model ?? "gpt-4o-mini",
+    temperature: 0.2,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: combined.slice(0, 15000) },
+    ],
+    skill: "code_review",
+    env: ctx.env,
+  });
+
+  let parsed: CodeReviewResult;
+  try {
+    parsed = JSON.parse(content) as CodeReviewResult;
+  } catch {
+    parsed = {
+      summary: content.slice(0, 2000),
+      findings: [],
+      metrics: {
+        filesCount: input.files.length,
+        chars,
+      },
+    };
+  }
+
+  ctx.telemetry?.onEvent?.({
+    type: "finish",
+    skill: "code_review",
+    result: parsed,
+    timestamp: new Date().toISOString(),
+  });
+
+  return parsed;
 }
