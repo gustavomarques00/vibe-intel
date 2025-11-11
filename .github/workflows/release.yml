@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js with OIDC (Trusted Publishing)
         uses: actions/setup-node@v4
         with:
-          node-version: 22.14.0
+          node-version: 22
           registry-url: 'https://registry.npmjs.org/'
           scope: '@devflow-modules'
           always-auth: true
@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile --dev
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build all packages
         run: pnpm build
@@ -48,7 +48,7 @@ jobs:
       - name: Release monorepo packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npx semantic-release \
-            --extends semantic-release-monorepo \
-            --tag-format '${name}@${version}'
+        run: >
+          npx semantic-release
+          --extends semantic-release-monorepo
+          --tag-format '\${name}@\${version}'
