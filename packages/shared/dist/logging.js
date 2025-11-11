@@ -7,3 +7,4 @@ export function logMCP(event) {
         console.log("[MCP]", JSON.stringify(event));
     }
 }
+//# sourceMappingURL=logging.js.map

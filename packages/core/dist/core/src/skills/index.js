@@ -8,3 +8,4 @@ export function getSkill(name) {
         throw new Error(`Skill not found: ${name}`);
     return skill;
 }
+//# sourceMappingURL=index.js.map

@@ -10,3 +10,4 @@ export async function loadFiles(globPattern) {
         content: await fs.readFile(filePath, "utf8"),
     })));
 }
+//# sourceMappingURL=context.js.map

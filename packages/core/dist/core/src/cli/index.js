@@ -20,3 +20,4 @@ export async function runCLI() {
     const result = await runAgent(input);
     console.log(JSON.stringify(result, null, 2));
 }
+//# sourceMappingURL=index.js.map
