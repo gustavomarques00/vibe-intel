@@ -3,7 +3,7 @@ name: 📊 Relatório Semanal
 on:
   schedule:
     - cron: "0 9 * * 1" # Toda segunda às 9h
-  workflow_dispatch: # Permite execução manual
+  workflow_dispatch: # Execução manual permitida
 
 jobs:
   report:
@@ -16,14 +16,16 @@ jobs:
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22" # mesmo da pipeline principal
+          node-version: "22"
           cache: "pnpm"
 
-      - name: 📦 Instalar dependências
+      - name: 📦 Instalar PNPM
         uses: pnpm/action-setup@v3
         with:
           version: 10
-      - run: pnpm install --frozen-lockfile
+
+      - name: 📦 Instalar dependências
+        run: pnpm install --frozen-lockfile
 
       - name: 🧠 Gerar Relatório Semanal (Notion)
         env:
