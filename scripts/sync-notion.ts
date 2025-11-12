@@ -70,8 +70,8 @@ async function updateSprintStatus(sprintNumber: number, status: string) {
 async function getSprintCommits(branch: string): Promise<string[]> {
     try {
         // garante que a main esteja disponível no ambiente CI
-        await git.fetch(["origin", "main", "--depth=5"]).catch(() => {});
-        
+        await git.fetch(["origin", "main", "--depth=5"]).catch(() => { });
+
         const log = await git.log({ from: "origin/main", to: branch }).catch(() => ({ all: [] }));
         const commits = log.all.map((c: { message: string }) => c.message).filter(Boolean);
 
@@ -178,6 +178,69 @@ async function updateSprintDuration(sprintNumber: number, branch: string) {
 }
 
 /* ---------------------------------------------------------
+ * 💬 Criar rascunho de post no Notion → LinkedIn
+ * --------------------------------------------------------- */
+
+async function createLinkedInPost(sprintNumber: number) {
+    const pageId = SPRINT_PAGES[sprintNumber];
+    if (!pageId || !LINKEDIN_DB_ID) return;
+
+    try {
+        const sprint = await notion.pages.retrieve({ page_id: pageId });
+        const sprintName =
+            (sprint as any).properties?.Sprint?.title?.[0]?.plain_text ||
+            `Sprint ${sprintNumber}`;
+        const objetivo =
+            (sprint as any).properties?.["Objetivo Principal"]?.rich_text?.[0]
+                ?.plain_text || "";
+
+        const commits = await getSprintCommits(`sprint/${sprintNumber}-*`);
+        const highlights = commits.slice(0, 3).join("\n");
+
+        const content = `✅ Sprint ${sprintNumber} concluída!
+            ${objetivo ? `${objetivo}\n\n` : ""}
+            **Principais entregas:**
+            ${highlights}
+            #BuildInPublic #TypeScript #SoftwareEngineering`;
+
+        await notion.pages.create({
+            parent: { database_id: LINKEDIN_DB_ID },
+            properties: {
+                Post: {
+                    title: [{ text: { content: `✅ Sprint ${sprintNumber}: ${sprintName}` } }],
+                },
+                Tipo: {
+                    select: { name: "Milestone" },
+                },
+                Status: {
+                    status: { name: "Rascunho" },
+                },
+                "Data Publicação": {
+                    date: { start: new Date().toISOString().split("T")[0] },
+                },
+                "Sprint Relacionada": {
+                    relation: [{ id: pageId }],
+                },
+            },
+            children: [
+                {
+                    object: "block",
+                    type: "paragraph",
+                    paragraph: {
+                        rich_text: [{ type: "text", text: { content } }],
+                    },
+                },
+            ],
+        });
+
+        console.log(`📱 Post LinkedIn criado como RASCUNHO (Sprint ${sprintNumber})`);
+    } catch (err) {
+        console.error("❌ Erro ao criar post LinkedIn:", (err as Error).message);
+    }
+}
+
+
+/* ---------------------------------------------------------
  * 🚀 Execução principal
  * --------------------------------------------------------- */
 
@@ -200,6 +263,7 @@ if (!sprintNumber) {
             if (prMerged) {
                 await updateSprintStatus(sprintNumber, "Concluído");
                 await updateSprintDuration(sprintNumber, branch);
+                await createLinkedInPost(sprintNumber);
             } else {
                 await updateSprintStatus(sprintNumber, "Testando");
             }
