@@ -25,11 +25,13 @@ export async function registerTasksRoute(fastify: FastifyInstance) {
         try {
           const input = BodySchema.parse(req.body);
 
-          const payload = {
-            files: input.files,
-            language: "typescript" as const,
-            focus: ["bugs", "style", "architecture"] as const,
-          };
+      const payload = {
+        files: input.files,
+        language: "typescript" as const,
+        focus: ["bugs", "style", "architecture"] as (
+          "bugs" | "style" | "architecture" | "performance" | "security"
+        )[],
+      };
 
           log?.info({ msg: "tasks:start", goal: input.goal });
 
