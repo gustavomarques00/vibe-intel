@@ -13,31 +13,28 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # 1️⃣ Configura Node.js com Corepack ativado
+      # 1️⃣ Instala PNPM globalmente via npm (garantido no PATH)
+      - name: 🧩 Instalar PNPM
+        run: |
+          npm install -g pnpm@10
+          pnpm -v
+
+      # 2️⃣ Configura Node.js (sem cache de pnpm para evitar conflito)
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
-
-      # 2️⃣ Ativa Corepack e instala PNPM globalmente
-      - name: 🧩 Ativar Corepack e instalar PNPM
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.0.0 --activate
-          echo "✅ PNPM instalado"
-          pnpm -v
 
       # 3️⃣ Instala dependências
       - name: 📦 Instalar dependências
         run: pnpm install --no-frozen-lockfile
 
-      # 4️⃣ Executa o relatório
+      # 4️⃣ Executa o relatório semanal
       - name: 🧠 Gerar Relatório Semanal (Notion)
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_SPRINT_DB_ID: ${{ secrets.NOTION_SPRINT_DB_ID }}
-        run: pnpm tsx scripts/weekly-report.ts
+        run: npx tsx scripts/weekly-report.ts
 
       # 5️⃣ Commit automático do relatório
       - name: 💾 Commit Report
