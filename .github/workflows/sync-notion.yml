@@ -17,16 +17,16 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
+      - name: 🧰 Instalar PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "pnpm"
-
-      - name: 📦 Instalar PNPM
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
 
       - name: 📦 Instalar dependências
         run: pnpm install --frozen-lockfile
