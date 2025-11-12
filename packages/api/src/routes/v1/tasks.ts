@@ -26,7 +26,7 @@ export async function registerTasksRoute(fastify: FastifyInstance) {
           env: "cloud",
           model: "gpt-4o-mini",
           telemetry: {
-            onEvent(event) {
+            onEvent(event: any) {
               console.log(`[${event.type}] ${event.skill}`, event.payload ?? event.result);
             },
           },

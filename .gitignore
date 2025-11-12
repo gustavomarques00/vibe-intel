@@ -1,7 +1,69 @@
+# =========================================================
+# 🧠 Vibe Intel — Git Ignore (Monorepo TypeScript / Turbo)
+# =========================================================
+
+# Node
 node_modules
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Environment files
 .env
 .env.local
 .env.*.local
 .env.test
+.env.development.local
+.env.production.local
+
+# Dist / Build output
+dist
+build
+out
+.next
+.vercel
+coverage
+
+# Turbo / Cache
+.turbo
+.turborepo
+turbo
+.cache
+.vscode-test
+
+# TypeScript
+*.tsbuildinfo
+
+# IDEs / Editors
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Reports / Logs
+reports/
+logs/
+*.log
+*.out
+*.pid
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.old
+
+# Generated assets
+*.zip
+*.tar.gz
+*.tgz
+
+# Mac / Windows system files
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

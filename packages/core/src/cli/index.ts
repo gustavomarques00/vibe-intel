@@ -13,7 +13,7 @@ export async function runCLI() {
       env: "local",
       model: "gpt-4o-mini",
       telemetry: {
-        onEvent(event) {
+        onEvent(event: any) {
           console.log(`[${event.type}] ${event.skill}`, event.payload ?? event.result);
         },
       },

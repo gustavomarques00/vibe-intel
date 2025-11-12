@@ -30,7 +30,7 @@ Para plugar em um sistema de auditoria:
 
 ```ts
 context.telemetry = {
-  onEvent(event) {
+  onEvent(event: any) {
     // enviar para log central, queue ou observability
   },
 };

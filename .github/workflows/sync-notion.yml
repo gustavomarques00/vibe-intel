@@ -1,0 +1,40 @@
+name: 🔄 Sync Notion Status
+
+on:
+  push:
+    branches:
+      - "sprint/**"
+  pull_request:
+    types: [opened, closed]
+    branches:
+      - "sprint/**"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: 📦 Instalar dependências
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - run: pnpm install --frozen-lockfile
+
+      - name: 🔗 Sync Notion Status
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_SPRINT_IDS: ${{ secrets.NOTION_SPRINT_IDS }}
+          LINKEDIN_DB_ID: ${{ secrets.LINKEDIN_DB_ID }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+        run: pnpm tsx scripts/sync-notion.ts

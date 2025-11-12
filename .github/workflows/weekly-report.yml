@@ -1,0 +1,40 @@
+name: 📊 Relatório Semanal
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Toda segunda às 9h
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22" # mesmo da pipeline principal
+          cache: "pnpm"
+
+      - name: 📦 Instalar dependências
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - run: pnpm install --frozen-lockfile
+
+      - name: 🧠 Gerar Relatório Semanal (Notion)
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_SPRINT_DB_ID: ${{ secrets.NOTION_SPRINT_DB_ID }}
+        run: pnpm tsx scripts/weekly-report.ts
+
+      - name: 💾 Commit Report
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add reports/
+          git diff --cached --quiet || git commit -m "docs: relatório semanal automático"
+          git push

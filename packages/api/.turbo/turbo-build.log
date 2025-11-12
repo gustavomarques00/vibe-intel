@@ -1,4 +1,4 @@
 
-> @devflow-modules/vibe-api@0.1.0 build C:\Users\Xakep\Desktop\vibe-intel\packages\api
+> @devflow-modules/vibe-api@0.1.1 build C:\Users\Xakep\Desktop\vibe-intel\packages\api
 > tsc -p tsconfig.json
 
