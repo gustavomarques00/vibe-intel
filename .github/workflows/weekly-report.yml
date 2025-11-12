@@ -13,30 +13,31 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # 1️⃣ Instala PNPM globalmente via npm (garantido no PATH)
-      - name: 🧩 Instalar PNPM
+      # 1️⃣ Instalar PNPM global ANTES de qualquer uso
+      - name: 🧩 Instalar PNPM globalmente
         run: |
           npm install -g pnpm@10
+          echo "✅ PNPM instalado com sucesso:"
           pnpm -v
 
-      # 2️⃣ Configura Node.js (sem cache de pnpm para evitar conflito)
+      # 2️⃣ Configurar Node.js
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      # 3️⃣ Instala dependências
+      # 3️⃣ Instalar dependências
       - name: 📦 Instalar dependências
         run: pnpm install --no-frozen-lockfile
 
-      # 4️⃣ Executa o relatório semanal
+      # 4️⃣ Executar script de relatório
       - name: 🧠 Gerar Relatório Semanal (Notion)
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_SPRINT_DB_ID: ${{ secrets.NOTION_SPRINT_DB_ID }}
         run: npx tsx scripts/weekly-report.ts
 
-      # 5️⃣ Commit automático do relatório
+      # 5️⃣ Commit automático
       - name: 💾 Commit Report
         run: |
           git config user.name "github-actions"
