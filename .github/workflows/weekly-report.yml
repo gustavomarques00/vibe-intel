@@ -3,7 +3,7 @@ name: 📊 Relatório Semanal
 on:
   schedule:
     - cron: "0 9 * * 1" # Toda segunda às 9h
-  workflow_dispatch: # Execução manual permitida
+  workflow_dispatch:
 
 jobs:
   report:
@@ -13,31 +13,33 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # 1️⃣ Setup Node primeiro
+      # 1️⃣ Configura Node.js com Corepack ativado
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
 
-      # 2️⃣ Instalar PNPM usando o instalador oficial
-      - name: 🧰 Instalar PNPM
+      # 2️⃣ Ativa Corepack e instala PNPM globalmente
+      - name: 🧩 Ativar Corepack e instalar PNPM
         run: |
           corepack enable
           corepack prepare pnpm@10.0.0 --activate
+          echo "✅ PNPM instalado"
           pnpm -v
 
-      # 3️⃣ Instalar dependências
+      # 3️⃣ Instala dependências
       - name: 📦 Instalar dependências
         run: pnpm install --no-frozen-lockfile
 
-      # 4️⃣ Executar relatório
+      # 4️⃣ Executa o relatório
       - name: 🧠 Gerar Relatório Semanal (Notion)
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_SPRINT_DB_ID: ${{ secrets.NOTION_SPRINT_DB_ID }}
         run: pnpm tsx scripts/weekly-report.ts
 
-      # 5️⃣ Commit automático
+      # 5️⃣ Commit automático do relatório
       - name: 💾 Commit Report
         run: |
           git config user.name "github-actions"
