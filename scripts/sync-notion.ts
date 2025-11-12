@@ -10,6 +10,8 @@ import { simpleGit } from "simple-git";
 
 dotenv.config();
 
+dotenv.config({ path: ".env.local" });
+
 const git = simpleGit();
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
