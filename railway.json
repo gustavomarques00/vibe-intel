@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pnpm build --filter @devflow-modules/vibe-api"
+  },
+  "deploy": {
+    "startCommand": "pnpm start:api",
+    "healthcheckPath": "/health",
+    "numReplicas": 1,
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

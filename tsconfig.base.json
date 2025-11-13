@@ -3,9 +3,11 @@
   "display": "Vibe Intel Base TSConfig",
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "NodeNext",
     "noImplicitAny": false,
     "strict": true,
     "esModuleInterop": true,
@@ -18,10 +20,27 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@devflow-modules/vibe-core": ["packages/core/src"],
-      "@devflow-modules/vibe-shared": ["packages/shared/src"],
-      "@devflow-modules/vibe-api": ["packages/api/src"]
+      "@devflow-modules/vibe-shared": [
+        "packages/shared/src/index.ts"
+      ],
+      "@devflow-modules/vibe-shared/*": [
+        "packages/shared/src/*"
+      ],
+      "@devflow-modules/vibe-core": [
+        "packages/core/src/index.ts"
+      ],
+      "@devflow-modules/vibe-core/*": [
+        "packages/core/src/*"
+      ],
+      "@devflow-modules/vibe-api": [
+        "packages/api/src/index.ts"
+      ],
+      "@devflow-modules/vibe-api/*": [
+        "packages/api/src/*"
+      ]
     }
   },
-  "include": ["packages"]
+  "include": [
+    "packages"
+  ]
 }

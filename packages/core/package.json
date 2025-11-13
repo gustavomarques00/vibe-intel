@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepublishOnly": "pnpm build",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "dev": "tsc --watch --preserveWatchOutput"
   },
   "dependencies": {
     "@devflow-modules/vibe-shared": "workspace:*"

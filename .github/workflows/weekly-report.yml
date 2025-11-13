@@ -1,12 +1,16 @@
-name: 📊 Relatório Semanal
+name: 📊 Weekly Report
+run-name: "📊 Weekly Report — ${{ github.run_id }}"
 
 on:
   schedule:
-    - cron: "0 9 * * 1" # Segunda 9h
+    - cron: "0 9 * * 1" # Segunda 9h (UTC-3)
   workflow_dispatch:
 
 permissions:
   contents: write
+
+env:
+  CI: true
 
 jobs:
   report:
@@ -16,7 +20,6 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # 1️⃣ Instalar Node 22 e PNPM manualmente (sem setup-node)
       - name: 🧰 Instalar Node e PNPM
         run: |
           curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
@@ -25,18 +28,15 @@ jobs:
           echo "✅ Node:" $(node -v)
           echo "✅ PNPM:" $(pnpm -v)
 
-      # 2️⃣ Instalar dependências
       - name: 📦 Instalar dependências
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-      # 3️⃣ Executar relatório semanal
-      - name: 🧠 Gerar Relatório Semanal (Notion)
+      - name: 🧠 Gerar Relatório Semanal
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_SPRINT_DB_ID: ${{ secrets.NOTION_SPRINT_DB_ID }}
         run: npx tsx scripts/weekly-report.ts
 
-      # 4️⃣ Commitar relatório se gerado
       - name: 💾 Commit Report (safe)
         run: |
           git config user.name "github-actions"

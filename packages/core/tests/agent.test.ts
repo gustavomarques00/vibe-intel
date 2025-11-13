@@ -2,12 +2,20 @@ import { describe, it, expect, vi } from "vitest";
 import { runAgent } from "../src/index.js";
 import type { CodeReviewResult } from "../src/skills/code_review.js";
 
-vi.mock("@devflow-modules/vibe-shared", () => ({
-    ai: vi.fn().mockResolvedValue({
-        content: "✅ Código analisado com sucesso.",
-        raw: {},
-    }),
-}));
+// Mock do módulo compartilhado
+vi.mock("@devflow-modules/vibe-shared", async (importOriginal) => {
+    const actual = (await importOriginal()) as Record<string, any>;
+    return {
+        ...actual,
+        ai: vi.fn().mockResolvedValue({
+            content: "✅ Código analisado com sucesso.",
+            raw: {},
+        }),
+        setupTelemetry: vi.fn(async () => ({
+            tracer: { startSpan: vi.fn() },
+        })),
+    };
+});
 
 describe("runAgent", () => {
     it("deve executar sem erros com input mínimo válido", async () => {
@@ -20,7 +28,6 @@ describe("runAgent", () => {
                         content: "console.log('Hello World')",
                     },
                 ],
-                // necessários apenas para satisfazer o TS (defaults em runtime)
                 language: "typescript",
                 focus: ["bugs", "style", "architecture"],
             },

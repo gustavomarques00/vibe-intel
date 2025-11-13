@@ -9,12 +9,11 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": [
-    "packages",
-    "scripts/**/*.ts"
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/core" },
+    { "path": "packages/api" }
   ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["packages", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

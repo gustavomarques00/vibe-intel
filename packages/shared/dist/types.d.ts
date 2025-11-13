@@ -31,14 +31,33 @@ export interface VibeSkillContext {
         onEvent?(event: VibeTelemetryEvent): void;
     };
 }
+/**
+ * Mapa base de skills.
+ * Cada pacote (ex: vibe-core) pode estender esse mapa via `declare module`.
+ * Exemplo:
+ * declare module "@devflow-modules/vibe-shared" {
+ *   interface SkillMapBase {
+ *     code_review: { input: CodeReviewInput; output: CodeReviewResult };
+ *   }
+ * }
+ */
 export interface SkillMapBase {
 }
 /**
- * Entrada genérica para execução de uma skill.
- * O tipo de payload e output é inferido automaticamente do SkillMapBase.
+ * Mapa completo de skills disponíveis (depois da extensão).
  */
-export interface VibeRunInput<K extends keyof SkillMapBase = keyof SkillMapBase> {
+export type SkillMap = SkillMapBase;
+/**
+ * Entrada genérica para execução de uma skill.
+ * O tipo de payload e output é inferido automaticamente do SkillMap.
+ */
+export interface VibeRunInput<K extends keyof SkillMap = keyof SkillMap> {
     skill: K;
-    payload: SkillMapBase[K]["input"];
+    payload: SkillMap[K]["input"];
     context: VibeSkillContext;
 }
+/**
+ * Saída genérica de execução de uma skill.
+ * Inferido automaticamente com base na skill passada.
+ */
+export type VibeRunOutput<K extends keyof SkillMap> = SkillMap[K]["output"];

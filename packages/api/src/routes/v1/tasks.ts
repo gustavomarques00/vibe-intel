@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { runAgent } from "@devflow-modules/vibe-core";
+import { trace } from "@opentelemetry/api";
 
 const BodySchema = z.object({
   goal: z.enum(["review", "tests", "docs"]),
@@ -17,37 +18,49 @@ export async function registerTasksRoute(fastify: FastifyInstance) {
     "/v1/tasks",
     { preValidation: [(fastify as any).authenticate] },
     async (req, res) => {
-      const input = BodySchema.parse(req.body);
+      const log = (req as any).log;
+      const tracer = trace.getTracer("vibe-api");
 
-      // Mapeia todos os goals para skill única por enquanto
-      const skill = "code_review";
+      await (req as any).withSpan?.("tasksHandler", async () => {
+        try {
+          const input = BodySchema.parse(req.body);
 
-      // Ajusta payload mínimo compatível com CodeReviewInput
       const payload = {
         files: input.files,
-        language: "typescript",
-        focus: ["bugs", "style", "architecture"],
+        language: "typescript" as const,
+        focus: ["bugs", "style", "architecture"] as (
+          "bugs" | "style" | "architecture" | "performance" | "security"
+        )[],
       };
 
-      const result = await runAgent({
-        skill: "code_review",
-        payload: {
-          files: input.files,
-          language: "typescript" as const,
-          focus: ["bugs", "style", "architecture"] as const,
-        },
-        context: {
-          env: "cloud",
-          model: "gpt-4o-mini",
-          telemetry: {
-            onEvent(event) {
-              console.log(`[${event.type}] ${event.skill}`, event.payload ?? event.result);
-            },
-          },
-        },
-      });
+          log?.info({ msg: "tasks:start", goal: input.goal });
 
-      return res.send({ ok: true, result });
+          const result = await runAgent({
+            skill: "code_review",
+            payload,
+            context: {
+              env: "cloud",
+              model: "gpt-4o-mini",
+              telemetry: {
+                onEvent(event) {
+                  log?.debug({
+                    msg: "tasks:event",
+                    type: event.type,
+                    skill: event.skill,
+                    data: event.payload ?? event.result,
+                  });
+                },
+              },
+            },
+          });
+
+          log?.info({ msg: "tasks:success" });
+          res.code(200).send({ ok: true, result });
+        } catch (err) {
+          log?.error({ msg: "tasks:error", err });
+          res.code(400).send({ ok: false, error: "Invalid or failed request" });
+        }
+      });
     }
   );
 }

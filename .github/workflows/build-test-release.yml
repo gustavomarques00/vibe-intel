@@ -1,0 +1,188 @@
+name: 🚀 Build · Test · Release · Deploy
+run-name: "🚀 Monorepo CI/CD — ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: ["main", "sprint/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+env:
+  CI: true
+
+jobs:
+  setup:
+    name: ⚙️ Setup Environment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: ⚡ Cache Turbo Build
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: 📦 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ✅ Verify Workspace Integrity
+        run: pnpm -r exec tsc --noEmit
+
+  lint:
+      name: 🧹 Lint
+      runs-on: ubuntu-latest
+      needs: setup
+
+      steps:
+        - uses: actions/checkout@v4
+        - uses: pnpm/action-setup@v3
+          with:
+            version: 10
+        - name: 🧰 Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: "22"
+            cache: "pnpm"
+        - name: 📦 Install Dependencies
+          run: pnpm install --frozen-lockfile
+        - name: ⚙️ Install Turborepo
+          run: pnpm add -g turbo
+        - name: 🧹 Run Lint
+          run: pnpm exec turbo run lint
+
+  test:
+    name: 🧪 Test
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - name: 📦 Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: ⚙️ Install Turborepo
+        run: pnpm add -g turbo
+      - name: 🧪 Run Tests
+        run: pnpm exec turbo run test
+
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - name: 📦 Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: ⚙️ Install Turborepo
+        run: pnpm add -g turbo
+      - name: 🏗️ Build All Packages
+        run: pnpm exec turbo run build --filter=!./
+
+  release:
+    name: 🚀 Release Monorepo Packages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [build]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧰 Setup PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.21.0
+
+      - name: 🧰 Setup Node.js (OIDC)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org/"
+          scope: "@devflow-modules"
+          always-auth: true
+
+      - name: ⚡ Cache PNPM
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: 📦 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build for Release
+        run: pnpm build
+
+      - name: 🚀 Semantic Release Monorepo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm release
+
+      - name: 📄 Summary
+        run: echo "🎉 Release concluído com sucesso!" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: 🌐 Deploy API to Railway
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref_name, 'sprint/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧰 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 🚀 Deploy to Railway
+        uses: railwayapp/github-action@v3
+        with:
+          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+          service: "vibe-api"
+          environment: ${{ startsWith(github.ref_name, 'sprint/') && 'staging' || 'production' }}
+
+      - name: 🧾 Tail Logs (Pino + OpenTelemetry)
+        if: success()
+        run: |
+          echo "📡 Capturando logs da aplicação..."
+          railway logs --service vibe-api --lines 100 --token ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: 📄 Summary
+        run: echo "🌐 Deploy realizado com sucesso no ambiente ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY

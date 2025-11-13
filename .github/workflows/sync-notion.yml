@@ -1,14 +1,16 @@
 name: 🔄 Sync Notion Status
+run-name: "🔄 Notion Sync — ${{ github.ref_name }}"
 
 on:
   push:
-    branches:
-      - "sprint/**"
+    branches: ["sprint/**"]
   pull_request:
     types: [opened, closed]
-    branches:
-      - "sprint/**"
-  workflow_dispatch:  # permite rodar manualmente pelo GitHub Actions
+    branches: ["sprint/**"]
+  workflow_dispatch:
+
+env:
+  CI: true
 
 jobs:
   sync:
@@ -18,7 +20,7 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 🧰 Instalar PNPM
+      - name: 🧰 Setup PNPM
         uses: pnpm/action-setup@v3
         with:
           version: 10

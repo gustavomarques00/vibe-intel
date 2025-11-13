@@ -1,14 +1,24 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "rootDir": "src",
-    "baseUrl": ".",
-    "typeRoots": ["node_modules/@types", "./src/types"]
+    "outDir": "dist",
+    "typeRoots": [
+      "node_modules/@types",
+      "./src/types"
+    ]
   },
-  "include": ["src"],
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "src"
+  ],
   "references": [
-    { "path": "../core" },
-    { "path": "../shared" }
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../shared"
+    }
   ]
 }
